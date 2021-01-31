@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="row" id="row0"></div>
+    </div>
+</body>
+<script>
+    $(document).ready(function() {
+        var now = new Date();
+        var daysOfYear = [];
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug", "Sep", "Oct", "Nov", "Dec"];
+        week = 0
+        var startdate = null
+        for (var d = new Date(2021, 0, 1); d.getDay() !== 1; d.setDate(d.getDate() + 1)) {
+            startdate = d;
+        }
+        $.get( "{{ url_for('holidays') }}", function( data ) {
+            holidays = data
+            for (const property in holidays) {
+                d = new Date(Date.parse(holidays[property]))
+                day = d.getDate()
+                month = d.getMonth()
+                year = d.getFullYear()
+                $('#day_'+day+'_'+month+'_'+year).css('background-color','#08e812');
+            }
+
+        });
+        for (var d = startdate; d < new Date(2022, 0, 1); d.setDate(d.getDate() + 1)) {
+            var dayName = days[d.getDay()];
+            if(dayName === 'Monday') {
+                week++;
+                $("#container").append('<div class="row" id="row'+week+'"></div>');
+            }
+            day = d.getDate()
+            month = d.getMonth()
+            year = d.getFullYear()
+            if(dayName !== 'Saturday' && dayName !== 'Sunday') {
+                $("#row"+week).append('<div id="day_'+day+'_'+month+'_'+year+'" class="col-lg-2 daycell">'+dayName+'<br>'
+                    +day+'<br>'+months[month].toUpperCase()+'<div>');
+            }else {
+                $("#row"+week).append('<div id="day_'+day+'_'+month+'_'+year+'" class="col-lg-1 daycell weekend">'+dayName+'<br>'
+                    +day+'<br>'+months[month].toUpperCase()+'<div>');
+            }
+        }
+
+    })
+</script>
+</html>

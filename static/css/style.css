@@ -1,0 +1,18 @@
+.daycell{
+    text-align: center;
+    border: 1px solid black;
+}
+.daycell:hover {
+    background-color: #86b7fe;
+    cursor:pointer;
+}
+.weekend {
+    background-color: #d5d5d5;
+}
+.weekend:hover {
+    background-color: #d5d5d5;
+    cursor: auto;
+}
+.container {
+    border: 1px solid black;
+}
