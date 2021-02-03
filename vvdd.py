@@ -13,10 +13,10 @@ def index():
 
 @app.route('/holidays')
 def holidays():
-    with open('holidays.txt') as f:
+    with open('holidays_2021.txt') as f:
         h = f.readlines()
     return jsonify([x.strip() for x in h])
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=55555)

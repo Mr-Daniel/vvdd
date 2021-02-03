@@ -52,7 +52,11 @@
                     +day+'<br>'+months[month].toUpperCase()+'<div>');
             }
         }
-
+        var d = new Date();
+        day = d.getDate()
+        month = d.getMonth()
+        year = d.getFullYear()
+        $('#day_'+day+'_'+month+'_'+year).css('background-color','#f5d0d0');
     })
 </script>
 </html>
