@@ -7,56 +7,99 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/moment.min.js') }}"></script>
 </head>
 <body>
-    <div class="container" id="container">
-        <div class="row" id="row0"></div>
+<div class="container" id="container">
+    <div class="row" id="row0"></div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="holidayModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="holidayModalTitle">Holiday</h5>
+                    <button type="button" class="close" onclick="$('#holidayModal').modal('hide')" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="halfDay">
+                        <label class="form-check-label" for="halfDay">
+                            Half Day
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="wholeDay">
+                        <label class="form-check-label" for="wholeDay">
+                            Whole Day
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="$('#holidayModal').modal('hide')">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 </body>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         var now = new Date();
         var daysOfYear = [];
         var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug", "Sep", "Oct", "Nov", "Dec"];
+        var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         week = 0
         var startdate = null
         for (var d = new Date(2021, 0, 1); d.getDay() !== 1; d.setDate(d.getDate() + 1)) {
             startdate = d;
         }
-        $.get( "{{ url_for('holidays') }}", function( data ) {
+        $.get("{{ url_for('holidays') }}", function (data) {
             holidays = data
             for (const property in holidays) {
                 d = new Date(Date.parse(holidays[property]))
                 day = d.getDate()
                 month = d.getMonth()
                 year = d.getFullYear()
-                $('#day_'+day+'_'+month+'_'+year).css('background-color','#08e812');
+                $('#day_' + day + '_' + month + '_' + year).css('background-color', '#08e812').attr('onclick', '');
             }
 
         });
         for (var d = startdate; d < new Date(2022, 0, 1); d.setDate(d.getDate() + 1)) {
             var dayName = days[d.getDay()];
-            if(dayName === 'Monday') {
+            if (dayName === 'Monday') {
                 week++;
-                $("#container").append('<div class="row" id="row'+week+'"></div>');
+                $("#container").append('<div class="row" id="row' + week + '"></div>');
             }
             day = d.getDate()
             month = d.getMonth()
             year = d.getFullYear()
-            if(dayName !== 'Saturday' && dayName !== 'Sunday') {
-                $("#row"+week).append('<div id="day_'+day+'_'+month+'_'+year+'" class="col-lg-2 daycell">'+dayName+'<br>'
-                    +day+'<br>'+months[month].toUpperCase()+'<div>');
-            }else {
-                $("#row"+week).append('<div id="day_'+day+'_'+month+'_'+year+'" class="col-lg-1 daycell weekend">'+dayName+'<br>'
-                    +day+'<br>'+months[month].toUpperCase()+'<div>');
+            if (dayName !== 'Saturday' && dayName !== 'Sunday') {
+                $("#row" + week).append('<div id="day_' + day + '_' + month + '_' + year + '" onclick="open_holiday_modal(\'day_' + day + '_' + month + '_' + year + '\')" class="col-lg-2 daycell">' + dayName + '<br>'
+                    + day + '<br>' + months[month].toUpperCase() + '<div>');
+            } else {
+                $("#row" + week).append('<div id="day_' + day + '_' + month + '_' + year + '" class="col-lg-1 daycell weekend">' + dayName + '<br>'
+                    + day + '<br>' + months[month].toUpperCase() + '<div>');
+                $("#day_" + day + "_" + month + "_" + year).attr("onclick","open_holiday_modal(day_" + day + "_" + month + "_" + year + ")");
             }
         }
         var d = new Date();
         day = d.getDate()
         month = d.getMonth()
         year = d.getFullYear()
-        $('#day_'+day+'_'+month+'_'+year).css('background-color','#f5d0d0');
+        $('#day_' + day + '_' + month + '_' + year).css('background-color', '#f5d0d0');
     })
+
+    function open_holiday_modal(cell_id) {
+        console.log(cell_id)
+        var datespl = cell_id.split('_')
+        var d = new Date(datespl[3],datespl[2], datespl[1], 0, 0, 0, 0)
+        console.log(d)
+        var formattedDate = moment(d).format('DD.MM.YYYY');
+        $('#holidayModal').modal("show");
+        $('#holidayModalTitle').html(formattedDate)
+    }
 </script>
 </html>
