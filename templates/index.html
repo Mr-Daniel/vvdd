@@ -24,20 +24,20 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="halfDay">
+                        <input class="form-check-input" type="radio" name="radiobutton" value="" id="halfDay">
                         <label class="form-check-label" for="halfDay">
                             Half Day
                         </label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="wholeDay">
+                        <input class="form-check-input" type="radio" name="radiobutton" value="" id="wholeDay" checked="checked">
                         <label class="form-check-label" for="wholeDay">
                             Whole Day
                         </label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-primary" onclick="addHoliday()">Save changes</button>
                     <button type="button" class="btn btn-secondary" onclick="$('#holidayModal').modal('hide')">Close</button>
                 </div>
             </div>
@@ -56,17 +56,7 @@
         for (var d = new Date(2021, 0, 1); d.getDay() !== 1; d.setDate(d.getDate() + 1)) {
             startdate = d;
         }
-        $.get("{{ url_for('holidays') }}", function (data) {
-            holidays = data
-            for (const property in holidays) {
-                d = new Date(Date.parse(holidays[property]))
-                day = d.getDate()
-                month = d.getMonth()
-                year = d.getFullYear()
-                $('#day_' + day + '_' + month + '_' + year).css('background-color', '#08e812').attr('onclick', '');
-            }
-
-        });
+        highlight_holidays()
         for (var d = startdate; d < new Date(2022, 0, 1); d.setDate(d.getDate() + 1)) {
             var dayName = days[d.getDay()];
             if (dayName === 'Monday') {
@@ -79,10 +69,11 @@
             if (dayName !== 'Saturday' && dayName !== 'Sunday') {
                 $("#row" + week).append('<div id="day_' + day + '_' + month + '_' + year + '" onclick="open_holiday_modal(\'day_' + day + '_' + month + '_' + year + '\')" class="col-lg-2 daycell">' + dayName + '<br>'
                     + day + '<br>' + months[month].toUpperCase() + '<div>');
+                $('#day_' + day + '_' + month + '_' + year).append('<div style="width:100%;height:50%;z-index:-1;" id="hday_' + day + '_' + month + '_' + year + '"></div>');
             } else {
                 $("#row" + week).append('<div id="day_' + day + '_' + month + '_' + year + '" class="col-lg-1 daycell weekend">' + dayName + '<br>'
                     + day + '<br>' + months[month].toUpperCase() + '<div>');
-                $("#day_" + day + "_" + month + "_" + year).attr("onclick","open_holiday_modal(day_" + day + "_" + month + "_" + year + ")");
+                // $("#day_" + day + "_" + month + "_" + year).attr("onclick","open_holiday_modal(day_" + day + "_" + month + "_" + year + ")");
             }
         }
         var d = new Date();
@@ -92,14 +83,55 @@
         $('#day_' + day + '_' + month + '_' + year).css('background-color', '#f5d0d0');
     })
 
+    function highlight_holidays() {
+        $.get("{{ url_for('holidays') }}", function (data) {
+            console.log(data)
+            holidays = data
+            for (const property in holidays) {
+                d = new Date(Date.parse(holidays[property].split(",")[0]))
+                day = d.getDate()
+                month = d.getMonth()
+                year = d.getFullYear()
+                if(holidays[property].split(",")[1] == 'base') {
+                    $('#day_' + day + '_' + month + '_' + year).css('background-color', '#08e812').attr('onclick', '');
+                }else {
+                    if (holidays[property].split(",")[1] == 'half') {
+                        $('#day_' + day + '_' + month + '_' + year).attr('onclick', '');
+                        $('#hday_' + day + '_' + month + '_' + year).css('background-color', '#079c0d')
+                    }else {
+                        $('#day_' + day + '_' + month + '_' + year).css('background-color', '#079c0d').attr('onclick', '');
+                    }
+                }
+
+            }
+            $('#holidayModal').modal("hide");
+        });
+    }
+
+    var selectedDay = null
+
     function open_holiday_modal(cell_id) {
         console.log(cell_id)
         var datespl = cell_id.split('_')
         var d = new Date(datespl[3],datespl[2], datespl[1], 0, 0, 0, 0)
-        console.log(d)
-        var formattedDate = moment(d).format('DD.MM.YYYY');
+        selectedDay = d
+        var formattedDate = moment(d).format('YYYY-MM-DD');
         $('#holidayModal').modal("show");
         $('#holidayModalTitle').html(formattedDate)
+    }
+
+    function addHoliday() {
+        if (selectedDay == null) return;
+        var tp = 'half'
+        if($('input[id=wholeDay]:checked').val()!==undefined)
+            tp = 'whole'
+
+        var formattedDate = moment(selectedDay).format('YYYY-MM-DD');
+        $.ajax({url: "/addholiday/"+formattedDate+"/"+tp, error: function(result){
+            console.log(result)
+        }, success: function () {
+            highlight_holidays()
+        }});
     }
 </script>
 </html>

@@ -1,4 +1,4 @@
-from datetime import datetime
+import json
 
 from flask import Flask, render_template, jsonify
 
@@ -15,7 +15,18 @@ def index():
 def holidays():
     with open('holidays_2021.txt') as f:
         h = f.readlines()
-    return jsonify([x.strip() for x in h])
+        h = ["{},base".format(x) for x in h]
+    with open('holidays_daniel_2021.txt') as f:
+        h1 = f.readlines()
+        h.extend(h1)
+    return jsonify([x.strip().replace('\n', '') for x in h])
+
+
+@app.route('/addholiday/<hdate>/<time_period>')
+def add_holiday(hdate, time_period):
+    with open('holidays_daniel_2021.txt', 'a') as f:
+        f.write("{},{}\n".format(hdate, time_period))
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 
 if __name__ == "__main__":
